@@ -18,9 +18,10 @@ void AAuraPlayerController::BeginPlay()
 	check(PlayerContext);
 
 	UEnhancedInputLocalPlayerSubsystem* LocalPlayerSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-	check(LocalPlayerSubsystem);
-
-	LocalPlayerSubsystem->AddMappingContext(PlayerContext, 0);
+	if (LocalPlayerSubsystem)
+	{
+		LocalPlayerSubsystem->AddMappingContext(PlayerContext, 0);
+	}
 
 	bShowMouseCursor = true;
 	//bEnableMouseOverEvents = true;
