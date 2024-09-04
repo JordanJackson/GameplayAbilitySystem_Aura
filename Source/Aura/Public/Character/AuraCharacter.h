@@ -28,5 +28,5 @@ protected:
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
 
 private:
-	void InitAbilityActorInfo();
+	virtual void InitAbilityActorInfo() override;
 };

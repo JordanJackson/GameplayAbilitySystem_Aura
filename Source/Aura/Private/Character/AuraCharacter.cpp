@@ -55,6 +55,7 @@ void AAuraCharacter::InitAbilityActorInfo()
 
 	AbilitySystemComponent = AuraPS->GetAbilitySystemComponent();
 	AbilitySystemComponent->InitAbilityActorInfo(AuraPS, this);
+	CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
 	AttributeSet = AuraPS->GetAttributeSet();
 
 	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))
@@ -65,4 +66,5 @@ void AAuraCharacter::InitAbilityActorInfo()
 		}
 	}
 
+	InitializePrimaryAttributes();
 }
