@@ -50,3 +50,8 @@ void AAuraEnemy::ClearHighlight()
 		Weapon->SetRenderCustomDepth(false);
 	}
 }
+
+int32 AAuraEnemy::GetPowerLevel()
+{
+	return Level;
+}

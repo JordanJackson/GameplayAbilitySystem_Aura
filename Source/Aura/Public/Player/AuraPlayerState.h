@@ -18,15 +18,25 @@ class AURA_API AAuraPlayerState : public APlayerState, public IAbilitySystemInte
 public:
 	AAuraPlayerState();
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty> & OutLifetimeProps) const override;
+
 	UFUNCTION(BlueprintCallable)
 	UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
+	FORCEINLINE int32 GetPowerLevel() { return PowerLevel; }
+
 protected:
+	UFUNCTION()
+	void OnRep_PowerLevel(int32 OldPowerLevel);
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
 	UPROPERTY()
 	TObjectPtr<UAttributeSet> AttributeSet;
+
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_PowerLevel)
+	int32 PowerLevel = 1;
 };

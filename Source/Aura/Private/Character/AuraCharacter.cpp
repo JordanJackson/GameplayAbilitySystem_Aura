@@ -40,6 +40,8 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	InitAbilityActorInfo();
+
+	AddStartingAbilities();
 }
 
 void AAuraCharacter::OnRep_PlayerState()
@@ -47,6 +49,12 @@ void AAuraCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	InitAbilityActorInfo();
+}
+
+int32 AAuraCharacter::GetPowerLevel()
+{
+	AAuraPlayerState* AuraPS = GetPlayerStateChecked<AAuraPlayerState>();
+	return AuraPS->GetPowerLevel();
 }
 
 void AAuraCharacter::InitAbilityActorInfo()
@@ -66,5 +74,5 @@ void AAuraCharacter::InitAbilityActorInfo()
 		}
 	}
 
-	InitializePrimaryAttributes();
+	InitializeDefaultAttributes();
 }
