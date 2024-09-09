@@ -23,6 +23,8 @@ class AURA_API AAuraPlayerController : public APlayerController
 public:
 	AAuraPlayerController();
 
+	bool ShouldHoldPosition() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void PlayerTick(float DeltaTime) override;
@@ -35,9 +37,14 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;
 
+	UPROPERTY(EditAnywhere, Category = "Input")
+	TObjectPtr<UInputAction> HoldPositionAction;
+
 	TScriptInterface<IHighlightInterface> HighlightActor;
 
 	void Move(const FInputActionValue& InputActionValue);
+	void HoldPosition(const FInputActionValue& InputActionValue);
+	bool bHoldPosition = false;
 
 	void CursorTrace();
 

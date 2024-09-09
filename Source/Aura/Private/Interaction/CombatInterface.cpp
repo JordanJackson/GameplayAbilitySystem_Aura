@@ -8,3 +8,8 @@ int32 ICombatInterface::GetPowerLevel()
 {
 	return 0;
 }
+
+FVector ICombatInterface::GetWeaponProjectileSocketLocation()
+{
+	return FVector();
+}

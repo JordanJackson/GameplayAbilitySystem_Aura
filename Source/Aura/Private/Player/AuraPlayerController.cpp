@@ -18,6 +18,11 @@ AAuraPlayerController::AAuraPlayerController()
 	SplineComponent = CreateDefaultSubobject<USplineComponent>("Spline");
 }
 
+bool AAuraPlayerController::ShouldHoldPosition() const
+{
+	return bHoldPosition;
+}
+
 void AAuraPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -56,6 +61,8 @@ void AAuraPlayerController::SetupInputComponent()
 	UAuraInputComponent* AuraInputComponent = CastChecked<UAuraInputComponent>(InputComponent);
 
 	AuraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
+	AuraInputComponent->BindAction(HoldPositionAction, ETriggerEvent::Started, this, &ThisClass::HoldPosition);
+	AuraInputComponent->BindAction(HoldPositionAction, ETriggerEvent::Completed, this, &ThisClass::HoldPosition);
 
 	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
 }
@@ -75,6 +82,20 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 	{
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+	}
+}
+
+void AAuraPlayerController::HoldPosition(const FInputActionValue& InputActionValue)
+{
+	const bool InputValue = InputActionValue.Get<bool>();
+
+	if (InputValue)
+	{
+		bHoldPosition = true;
+	}
+	else
+	{
+		bHoldPosition = false;
 	}
 }
 
@@ -127,7 +148,7 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 {
 	// Click to Move
-	if (!bTargeting && InputTag.MatchesTagExact(FGameplayTag::RequestGameplayTag(FName("InputTag.PrimaryAttack"))))
+	if (!bTargeting && !bHoldPosition && InputTag.MatchesTagExact(FGameplayTag::RequestGameplayTag(FName("InputTag.PrimaryAttack"))))
 	{
 		const APawn* ControlledPawn = GetPawn();
 		if (ControlledPawn && FollowTime <= ShortPressThreshold)
@@ -145,19 +166,17 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		}
 		FollowTime = 0.0f;
 	}
-	else
+
+	if (GetAuraAbilitySystemComponent() != nullptr)
 	{
-		if (GetAuraAbilitySystemComponent() != nullptr)
-		{
-			GetAuraAbilitySystemComponent()->AbilityInputTagReleased(InputTag);
-		}
+		GetAuraAbilitySystemComponent()->AbilityInputTagReleased(InputTag);
 	}
 }
 
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 {
 	// Click to Move
-	if (!bTargeting && InputTag.MatchesTagExact(FGameplayTag::RequestGameplayTag(FName("InputTag.PrimaryAttack"))))
+	if (!bTargeting && !bHoldPosition && InputTag.MatchesTagExact(FGameplayTag::RequestGameplayTag(FName("InputTag.PrimaryAttack"))))
 	{
 		FollowTime += GetWorld()->GetDeltaSeconds();
 		
