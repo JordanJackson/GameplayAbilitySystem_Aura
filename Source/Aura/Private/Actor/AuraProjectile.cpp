@@ -7,6 +7,9 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
+#include "Aura/Aura.h"
 
 AAuraProjectile::AAuraProjectile()
 {
@@ -15,6 +18,7 @@ AAuraProjectile::AAuraProjectile()
 
 	SphereComponent = CreateDefaultSubobject<USphereComponent>("Sphere");
 	SetRootComponent(SphereComponent);
+	SphereComponent->SetCollisionObjectType(ECC_Projectile);
 	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereComponent->SetCollisionResponseToChannels(ECR_Ignore);
 	SphereComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
@@ -34,6 +38,7 @@ void AAuraProjectile::BeginPlay()
 	SetLifeSpan(Lifespan);
 
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnSphereOverlap);
+	SphereComponent->IgnoreActorWhenMoving(GetInstigator(), true);
 
 	ProjectileSoundComponent = UGameplayStatics::SpawnSoundAttached(ProjectileSound, RootComponent);
 }
@@ -60,10 +65,18 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 
 	UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
-	ProjectileSoundComponent->Stop();
+	if (ProjectileSoundComponent)
+	{
+		ProjectileSoundComponent->Stop();
+	}
 
 	if (HasAuthority())
 	{
+		if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
+		{
+			TargetASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data);
+		}
+
 		Destroy();
 	}
 	else

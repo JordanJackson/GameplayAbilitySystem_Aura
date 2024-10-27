@@ -5,7 +5,10 @@
 #include "GameplayEffectExtension.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "Interaction/CombatInterface.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
+#include "Player/AuraPlayerController.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
@@ -78,10 +81,43 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
+		UE_LOG(LogTemp, Warning, TEXT("Changed Health on [%s], Health: %.2f"), *EffectProperties.TargetAvatarActor->GetName(), GetHealth());
 	}
 	else if (Data.EvaluatedData.Attribute == GetManaAttribute())
 	{
 		SetMana(FMath::Clamp(GetMana(), 0.0f, GetMaxMana()));
+	}
+
+	if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())
+	{
+		const float LocalIncomingDamage = GetIncomingDamage();
+		SetIncomingDamage(0.0f);
+		if (LocalIncomingDamage > 0.0f)
+		{
+			const float NewHealth = GetHealth() - LocalIncomingDamage;
+			SetHealth(FMath::Clamp(NewHealth, 0.0f, GetMaxHealth()));
+
+			const bool bFatal = NewHealth <= 0.0f;
+			if (bFatal)
+			{
+				//FGameplayTagContainer FatalTagContainer;
+				//FatalTagContainer.AddTag(FGameplayTag::RequestGameplayTag(FName("Status.Dead")));
+				//EffectProperties.TargetASC->TryActivateAbilitiesByTag(FatalTagContainer);
+				TScriptInterface<ICombatInterface> CombatInterface = EffectProperties.TargetAvatarActor;
+				if (CombatInterface.GetInterface())
+				{
+					CombatInterface->Die();
+				}
+			}
+			else
+			{
+				FGameplayTagContainer HitReactTagContainer;
+				HitReactTagContainer.AddTag(FGameplayTag::RequestGameplayTag(FName("Status.HitReact")));
+				EffectProperties.TargetASC->TryActivateAbilitiesByTag(HitReactTagContainer);
+			}
+
+			ShowFloatingText(EffectProperties, LocalIncomingDamage);
+		}
 	}
 }
 
@@ -195,5 +231,17 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 		OutProps.TargetController = Data.Target.AbilityActorInfo->PlayerController.Get();
 		OutProps.TargetCharacter = Cast<ACharacter>(OutProps.TargetAvatarActor);
 		OutProps.TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OutProps.TargetAvatarActor);
+	}
+}
+
+void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage) const
+{
+	// don't show self damage
+	if (Props.SourceCharacter != Props.TargetCharacter)
+	{
+		if (AAuraPlayerController* APC = Cast<AAuraPlayerController>(UGameplayStatics::GetPlayerController(Props.SourceCharacter, 0)))
+		{
+			APC->ShowDamageNumber(Props.TargetCharacter, Damage);
+		}
 	}
 }

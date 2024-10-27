@@ -13,19 +13,23 @@ class UCombatInterface : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * 
- */
+class UAnimMontage;
+
 class AURA_API ICombatInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual int32 GetPowerLevel();
+	virtual int32 GetPowerLevel() const;
 
 	virtual FVector GetWeaponProjectileSocketLocation();
 
+	virtual void Die() = 0;
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent)
 	void SetMotionWarpFacingTarget(const FVector& TargetLocation);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UAnimMontage* GetHitReactMontage();
 };

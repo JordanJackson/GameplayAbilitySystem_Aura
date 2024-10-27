@@ -10,6 +10,7 @@
 #include "Components/SplineComponent.h"
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
+#include "UI/Widget/DamageTextComponent.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
@@ -65,6 +66,18 @@ void AAuraPlayerController::SetupInputComponent()
 	AuraInputComponent->BindAction(HoldPositionAction, ETriggerEvent::Completed, this, &ThisClass::HoldPosition);
 
 	AuraInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::AbilityInputTagPressed, &ThisClass::AbilityInputTagReleased, &ThisClass::AbilityInputTagHeld);
+}
+
+void AAuraPlayerController::ShowDamageNumber_Implementation(AActor* TargetActor, float DamageAmount)
+{
+	if (IsValid(TargetActor) && DamageTextComponentClass)
+	{
+		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetActor, DamageTextComponentClass);
+		DamageText->RegisterComponent();
+		DamageText->AttachToComponent(TargetActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		DamageText->SetDamageText(DamageAmount);
+	}
 }
 
 void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)

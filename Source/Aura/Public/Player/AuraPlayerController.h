@@ -14,6 +14,7 @@ class IHighlightInterface;
 class UAuraInputConfig;
 class UAuraAbilitySystemComponent;
 class USplineComponent;
+class UDamageTextComponent;
 
 UCLASS()
 class AURA_API AAuraPlayerController : public APlayerController
@@ -24,11 +25,14 @@ public:
 	AAuraPlayerController();
 
 	bool ShouldHoldPosition() const;
+	UFUNCTION(Client, Unreliable)
+	void ShowDamageNumber(AActor* TargetActor, float DamageAmount);
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void PlayerTick(float DeltaTime) override;
 	virtual void SetupInputComponent() override;
+
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Input")
@@ -73,6 +77,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> SplineComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;
 
 	void AutoRun();
 };

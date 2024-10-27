@@ -51,7 +51,7 @@ void AAuraCharacter::OnRep_PlayerState()
 	InitAbilityActorInfo();
 }
 
-int32 AAuraCharacter::GetPowerLevel()
+int32 AAuraCharacter::GetPowerLevel() const
 {
 	AAuraPlayerState* AuraPS = GetPlayerStateChecked<AAuraPlayerState>();
 	return AuraPS->GetPowerLevel();

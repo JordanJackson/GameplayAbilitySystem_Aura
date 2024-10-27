@@ -21,7 +21,7 @@ public:
 	virtual void OnRep_PlayerState() override;
 
 	// Combat Interface
-	virtual int32 GetPowerLevel() override;
+	virtual int32 GetPowerLevel() const override;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly)
