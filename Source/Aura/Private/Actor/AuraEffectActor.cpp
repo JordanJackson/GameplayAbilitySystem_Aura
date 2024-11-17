@@ -29,16 +29,32 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 		return;
 	}
 	check(GameplayEffectClass);
+
+	if (!bApplyEffectsToEnemies && TargetActor->ActorHasTag(FName("Enemy")))
+	{
+		return;
+	}
 	
 	FGameplayEffectContextHandle EffectContextHandle = TargetASC->MakeEffectContext();
 	EffectContextHandle.AddSourceObject(this);
 
 	const FGameplayEffectSpecHandle EffectSpecHandle = TargetASC->MakeOutgoingSpec(GameplayEffectClass, EffectLevel, EffectContextHandle);
 	FActiveGameplayEffectHandle ActiveEffectHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data);
+
+	EGameplayEffectDurationType DurationType = EffectSpecHandle.Data.Get()->Def.Get()->DurationPolicy;
+
+	if (bDestroyOnEffectApplication && DurationType != EGameplayEffectDurationType::Infinite)
+	{
+		Destroy();
+	}
 }
 
 void AAuraEffectActor::OnOverlap(AActor* TargetActor)
 {
+	if (!bApplyEffectsToEnemies && TargetActor->ActorHasTag(FName("Enemy")))
+	{
+		return;
+	}
 	for (const FEffectApplication& EffectApplication : EffectsToApply)
 	{
 		if (EffectApplication.ApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap)
@@ -49,7 +65,11 @@ void AAuraEffectActor::OnOverlap(AActor* TargetActor)
 }
 
 void AAuraEffectActor::OnEndOverlap(AActor* TargetActor)
-{
+{	
+	if (!bApplyEffectsToEnemies && TargetActor->ActorHasTag(FName("Enemy")))
+	{
+		return;
+	}
 	for (const FEffectApplication& EffectApplication : EffectsToApply)
 	{
 		if (EffectApplication.ApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndOverlap)

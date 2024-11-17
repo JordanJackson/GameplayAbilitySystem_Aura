@@ -10,6 +10,8 @@
 #include "AuraEnemy.generated.h"
 
 class UWidgetComponent;
+class UBehaviorTree;
+class AAuraAIController;
 
 UCLASS()
 class AURA_API AAuraEnemy : public AAuraCharacterBase, public IHighlightInterface
@@ -18,6 +20,7 @@ class AURA_API AAuraEnemy : public AAuraCharacterBase, public IHighlightInterfac
 
 public:
 	AAuraEnemy();
+	virtual void PossessedBy(AController* NewController);
 
 	// Highlight Interface
 	virtual void Highlight() override;
@@ -60,4 +63,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> StatusBarWidgetComponent;
+
+	UPROPERTY(EditAnywhere, Category = "AI")
+	TObjectPtr<UBehaviorTree> BehaviorTree;
+
+	UPROPERTY()
+	TObjectPtr<AAuraAIController> AuraAIController;
 };

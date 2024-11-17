@@ -65,4 +65,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
 	float EffectLevel = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+	bool bDestroyOnEffectApplication = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+	bool bApplyEffectsToEnemies = false;
 };

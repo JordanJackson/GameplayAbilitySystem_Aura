@@ -26,7 +26,7 @@ public:
 
 	bool ShouldHoldPosition() const;
 	UFUNCTION(Client, Unreliable)
-	void ShowDamageNumber(AActor* TargetActor, float DamageAmount);
+	void ShowDamageNumber(AActor* TargetActor, float DamageAmount, bool bBlockedHit, bool bCriticalHit);
 
 protected:
 	virtual void BeginPlay() override;

@@ -5,6 +5,7 @@
 #include "GameplayEffectExtension.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Interaction/CombatInterface.h"
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
@@ -13,22 +14,28 @@
 UAuraAttributeSet::UAuraAttributeSet()
 {
 	// Primary
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Primary.Strength")), GetStrengthAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Primary.Intelligence")), GetIntelligenceAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Primary.Resilience")), GetResilienceAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Primary.Vigor")), GetVigorAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Primary.Strength"), GetStrengthAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Primary.Intelligence"), GetIntelligenceAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Primary.Resilience"), GetResilienceAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Primary.Vigor"), GetVigorAttribute);
 	
 	// Secondary
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.Armor")), GetArmorAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.ArmorPenetration")), GetArmorPenetrationAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.BlockChance")), GetBlockChanceAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.CriticalHitChance")), GetCriticalHitChanceAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.CriticalHitDamage")), GetCriticalHitDamageAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.CriticalHitResistance")), GetCriticalHitResistanceAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.HealthRegeneration")), GetHealthRegenerationAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.ManaRegeneration")), GetManaRegenerationAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.MaxHealth")), GetMaxHealthAttribute);
-	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag(FName("Attribute.Secondary.MaxMana")), GetMaxManaAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.Armor"), GetArmorAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.ArmorPenetration"), GetArmorPenetrationAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.BlockChance"), GetBlockChanceAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.CriticalHitChance"), GetCriticalHitChanceAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.CriticalHitDamage"), GetCriticalHitDamageAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.CriticalHitResistance"), GetCriticalHitResistanceAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.HealthRegeneration"), GetHealthRegenerationAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.ManaRegeneration"), GetManaRegenerationAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.MaxHealth"), GetMaxHealthAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Secondary.MaxMana"), GetMaxManaAttribute);
+
+	// Resistances
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Resistance.Physical"), GetResistancePhysicalAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Resistance.Fire"), GetResistanceFireAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Resistance.Arcane"), GetResistanceArcaneAttribute);
+	GameplayTagToGetAttributeMap.Add(FGameplayTag::RequestGameplayTag("Attribute.Resistance.Lightning"), GetResistanceLightningAttribute);
 }
 
 void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -54,6 +61,11 @@ void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ManaRegeneration, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, MaxMana, COND_None, REPNOTIFY_Always);
+	// Resistance
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ResistancePhysical, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ResistanceFire, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ResistanceArcane, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet, ResistanceLightning, COND_None, REPNOTIFY_Always);
 }
 
 void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -116,7 +128,9 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 				EffectProperties.TargetASC->TryActivateAbilitiesByTag(HitReactTagContainer);
 			}
 
-			ShowFloatingText(EffectProperties, LocalIncomingDamage);
+			const bool bBlockedHit = UAuraAbilitySystemLibrary::IsBlockedHit(EffectProperties.EffectContextHandle);
+			const bool bCriticalHit = UAuraAbilitySystemLibrary::IsCriticalHit(EffectProperties.EffectContextHandle);
+			ShowFloatingText(EffectProperties, LocalIncomingDamage, bBlockedHit, bCriticalHit);
 		}
 	}
 }
@@ -191,6 +205,26 @@ void UAuraAttributeSet::OnRep_ManaRegeneration(const FGameplayAttributeData& Old
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, ManaRegeneration, OldManaRegeneration);
 }
 
+void UAuraAttributeSet::OnRep_ResistancePhysical(const FGameplayAttributeData& OldResistancePhysical) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, ResistancePhysical, OldResistancePhysical);
+}
+
+void UAuraAttributeSet::OnRep_ResistanceFire(const FGameplayAttributeData& OldResistanceFire) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, ResistanceFire, OldResistanceFire);
+}
+
+void UAuraAttributeSet::OnRep_ResistanceArcane(const FGameplayAttributeData& OldResistanceArcane) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, ResistanceArcane, OldResistanceArcane);
+}
+
+void UAuraAttributeSet::OnRep_ResistanceLightning(const FGameplayAttributeData& OldResistanceLightning) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, ResistanceLightning, OldResistanceLightning);
+}
+
 void UAuraAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) const
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet, MaxHealth, OldMaxHealth);
@@ -234,14 +268,14 @@ void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData
 	}
 }
 
-void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage) const
+void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage, bool bBlockedHit, bool bCriticalHit) const
 {
 	// don't show self damage
 	if (Props.SourceCharacter != Props.TargetCharacter)
 	{
-		if (AAuraPlayerController* APC = Cast<AAuraPlayerController>(UGameplayStatics::GetPlayerController(Props.SourceCharacter, 0)))
+		if (AAuraPlayerController* APC = Cast<AAuraPlayerController>(Props.SourceCharacter->GetController()))
 		{
-			APC->ShowDamageNumber(Props.TargetCharacter, Damage);
+			APC->ShowDamageNumber(Props.TargetCharacter, Damage, bBlockedHit, bCriticalHit);
 		}
 	}
 }
