@@ -27,10 +27,11 @@ public:
 
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
-	virtual FVector GetWeaponProjectileSocketLocation() override;
-
+	// Combat Interface
+	virtual FVector GetWeaponCombatSocketLocation_Implementation() override;
+	virtual bool IsDead_Implementation() const override;
+	virtual AActor* GetAvatar_Implementation() override;
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
-
 	virtual void Die() override;
 
 	UFUNCTION(NetMulticast, Reliable)
@@ -86,4 +87,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Combat")
 	TObjectPtr<UAnimMontage> HitReactMontage;
+
+	bool bIsDead = false;
 };

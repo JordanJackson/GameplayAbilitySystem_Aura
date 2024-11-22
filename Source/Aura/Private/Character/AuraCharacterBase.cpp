@@ -70,9 +70,20 @@ UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
-FVector AAuraCharacterBase::GetWeaponProjectileSocketLocation()
+bool AAuraCharacterBase::IsDead_Implementation() const
 {
+	return bIsDead;
+}
+
+FVector AAuraCharacterBase::GetWeaponCombatSocketLocation_Implementation()
+{
+	check(Weapon);
 	return Weapon->GetSocketLocation(WeaponTipSocketName);
+}
+
+AActor* AAuraCharacterBase::GetAvatar_Implementation()
+{
+	return this;
 }
 
 void AAuraCharacterBase::Die()
@@ -97,6 +108,7 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation()
 	GetCapsuleComponent()->SetSimulatePhysics(false);
 
 	Dissolve();
+	bIsDead = true;
 }
 
 void AAuraCharacterBase::Dissolve()

@@ -23,7 +23,8 @@ class AURA_API ICombatInterface
 public:
 	virtual int32 GetPowerLevel() const;
 
-	virtual FVector GetWeaponProjectileSocketLocation();
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	FVector GetWeaponCombatSocketLocation();
 
 	virtual void Die() = 0;
 
@@ -32,4 +33,10 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	UAnimMontage* GetHitReactMontage();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	bool IsDead() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	AActor* GetAvatar();
 };

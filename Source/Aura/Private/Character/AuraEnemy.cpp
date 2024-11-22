@@ -44,6 +44,10 @@ void AAuraEnemy::PossessedBy(AController* NewController)
 	AuraAIController = Cast<AAuraAIController>(NewController);
 	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 	AuraAIController->RunBehaviorTree(BehaviorTree);
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsInHitReact"), false);
+
+	const bool bIsRangedClass = CharacterClass == ECharacterClass::Elementalist || CharacterClass == ECharacterClass::Ranger;
+	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsRangedClass"), bIsRangedClass);
 }
 
 void AAuraEnemy::BeginPlay()
@@ -56,7 +60,7 @@ void AAuraEnemy::BeginPlay()
 
 	if (HasAuthority())
 	{
-		UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent);
+		UAuraAbilitySystemLibrary::GiveStartupAbilities(this, AbilitySystemComponent, CharacterClass);
 	}
 
 	if (UAuraUserWidget* AuraUserWidget = Cast<UAuraUserWidget>(StatusBarWidgetComponent->GetUserWidgetObject()))
@@ -137,6 +141,16 @@ void AAuraEnemy::Die()
 	Super::Die();
 }
 
+AActor* AAuraEnemy::GetCombatTarget_Implementation() const
+{
+	return CombatTarget;
+}
+
+void AAuraEnemy::SetCombatTarget_Implementation(AActor* InCombatTarget)
+{
+	CombatTarget = InCombatTarget;
+}
+
 void AAuraEnemy::MulticastHandleDeath_Implementation()
 {
 	Super::MulticastHandleDeath_Implementation();
@@ -149,4 +163,8 @@ void AAuraEnemy::HitReactTagChanged(const FGameplayTag CallbackTag, int32 NewCou
 	bHitReactActive = NewCount > 0;
 	
 	GetCharacterMovement()->MaxWalkSpeed = bHitReactActive ? 0.0f : BaseWalkSpeed;
+	if (AuraAIController)
+	{
+		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("IsInHitReact"), bHitReactActive);
+	}
 }
