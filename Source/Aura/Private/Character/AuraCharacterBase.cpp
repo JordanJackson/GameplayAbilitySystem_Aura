@@ -21,6 +21,10 @@ AAuraCharacterBase::AAuraCharacterBase()
 	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon");
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	MontageSocketMap.Add(FGameplayTag::RequestGameplayTag("Montage.Attack.Weapon"), FCombatSocket(FName("TipSocket"), true));
+	MontageSocketMap.Add(FGameplayTag::RequestGameplayTag("Montage.Attack.LeftHand"), FCombatSocket(FName("LeftHandSocket"), false));
+	MontageSocketMap.Add(FGameplayTag::RequestGameplayTag("Montage.Attack.RightHand"), FCombatSocket(FName("RightHandSocket"), false));
 }
 
 void AAuraCharacterBase::BeginPlay()
@@ -75,10 +79,22 @@ bool AAuraCharacterBase::IsDead_Implementation() const
 	return bIsDead;
 }
 
-FVector AAuraCharacterBase::GetWeaponCombatSocketLocation_Implementation()
+FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag)
 {
-	check(Weapon);
-	return Weapon->GetSocketLocation(WeaponTipSocketName);
+	if (MontageTag.IsValid() && MontageSocketMap.Contains(MontageTag))
+	{
+		const FCombatSocket CombatSocket = MontageSocketMap[MontageTag];
+		if (CombatSocket.bUseWeaponMesh)
+		{
+			return Weapon->GetSocketLocation(CombatSocket.SocketName);
+		}
+		else
+		{
+			return GetMesh()->GetSocketLocation(CombatSocket.SocketName);
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("[%s] does not have a valid socket for GameplayTag [%s]."), *GetNameSafe(this), *MontageTag.GetTagName().ToString());
+	return FVector::ZeroVector;
 }
 
 AActor* AAuraCharacterBase::GetAvatar_Implementation()
@@ -89,6 +105,11 @@ AActor* AAuraCharacterBase::GetAvatar_Implementation()
 void AAuraCharacterBase::Die()
 {
 	MulticastHandleDeath();
+}
+
+TArray<FTaggedMontage> AAuraCharacterBase::GetAttackMontages_Implementation()
+{
+	return AttackMontages;
 }
 
 void AAuraCharacterBase::MulticastHandleDeath_Implementation()

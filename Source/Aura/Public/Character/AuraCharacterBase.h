@@ -28,14 +28,21 @@ public:
 	UAttributeSet* GetAttributeSet() const { return AttributeSet; }
 
 	// Combat Interface
-	virtual FVector GetWeaponCombatSocketLocation_Implementation() override;
+	virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) override;
 	virtual bool IsDead_Implementation() const override;
 	virtual AActor* GetAvatar_Implementation() override;
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual void Die() override;
+	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() override;
 
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void MulticastHandleDeath();
+
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	TArray<FTaggedMontage> AttackMontages;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	TMap<FGameplayTag, FCombatSocket> MontageSocketMap;
 
 	void Dissolve();
 

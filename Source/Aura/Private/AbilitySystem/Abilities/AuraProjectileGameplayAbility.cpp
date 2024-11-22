@@ -27,7 +27,7 @@ void UAuraProjectileGameplayAbility::SpawnProjectile(const FVector& ProjectileTa
 	AActor* OwningActor = GetOwningActorFromActorInfo();
 
 	FTransform SpawnTransform;
-	const FVector WeaponSocketLocation = ICombatInterface::Execute_GetWeaponCombatSocketLocation(AvatarActor);
+	const FVector WeaponSocketLocation = ICombatInterface::Execute_GetCombatSocketLocation(AvatarActor, FGameplayTag::RequestGameplayTag("Montage.Attack.Weapon"));
 	SpawnTransform.SetLocation(WeaponSocketLocation);
 		
 	FRotator Rotation = (ProjectileTargetLocation - WeaponSocketLocation).Rotation();
