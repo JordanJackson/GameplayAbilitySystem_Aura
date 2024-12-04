@@ -161,3 +161,11 @@ void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 		}
 	}
 }
+
+bool UAuraAbilitySystemLibrary::IsEnemy(AActor* FirstActor, AActor* SecondActor)
+{
+	const bool bFirstIsPlayer = FirstActor->ActorHasTag(FName("Aura"));
+	const bool bSecondIsPlayer = SecondActor->ActorHasTag(FName("Aura"));
+
+	return bFirstIsPlayer != bSecondIsPlayer;
+}
