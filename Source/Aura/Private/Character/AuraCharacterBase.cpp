@@ -112,6 +112,16 @@ TArray<FTaggedMontage> AAuraCharacterBase::GetAttackMontages_Implementation()
 	return AttackMontages;
 }
 
+FTaggedMontage AAuraCharacterBase::GetRandomAttackMontage_Implementation()
+{
+	if (AttackMontages.IsEmpty())
+	{
+		return FTaggedMontage();
+	}
+
+	return AttackMontages[FMath::RandRange(0, AttackMontages.Num()-1)];
+}
+
 void AAuraCharacterBase::MulticastHandleDeath_Implementation()
 {
 	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld, true));

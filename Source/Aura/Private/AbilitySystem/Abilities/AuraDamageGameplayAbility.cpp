@@ -6,6 +6,7 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayEffectTypes.h"
+#include "Interaction/CombatInterface.h"
 
 void UAuraDamageGameplayAbility::ApplyDamage(AActor* TargetActor)
 {
@@ -17,4 +18,14 @@ void UAuraDamageGameplayAbility::ApplyDamage(AActor* TargetActor)
 	}
 
 	GetAbilitySystemComponentFromActorInfo()->ApplyGameplayEffectSpecToTarget(*DamageSpecHandle.Data.Get(), UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor));
+}
+
+FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const
+{
+	if (TaggedMontages.IsEmpty())
+	{
+		return FTaggedMontage();
+	}
+	
+	return TaggedMontages[FMath::RandRange(0, TaggedMontages.Num() - 1)];
 }

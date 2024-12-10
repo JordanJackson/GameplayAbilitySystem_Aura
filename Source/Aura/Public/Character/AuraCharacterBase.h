@@ -34,6 +34,7 @@ public:
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;
 	virtual void Die() override;
 	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() override;
+	virtual FTaggedMontage GetRandomAttackMontage_Implementation() override;
 
 	UFUNCTION(NetMulticast, Reliable)
 	virtual void MulticastHandleDeath();
@@ -68,11 +69,8 @@ protected:
 	virtual void InitializeDefaultAttributes() const;
 	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass, float Level = 1.0f) const;
 
-	UPROPERTY(EditAnywhere, Category = "Combat")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TObjectPtr<USkeletalMeshComponent> Weapon;
-
-	UPROPERTY(EditAnywhere, Category = "Combat")
-	FName WeaponTipSocketName;
 
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;

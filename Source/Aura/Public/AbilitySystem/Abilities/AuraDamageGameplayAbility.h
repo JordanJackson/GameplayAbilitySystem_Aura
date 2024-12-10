@@ -6,6 +6,8 @@
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 #include "AuraDamageGameplayAbility.generated.h"
 
+struct FTaggedMontage;
+
 UCLASS()
 class AURA_API UAuraDamageGameplayAbility : public UAuraGameplayAbility
 {
@@ -14,6 +16,9 @@ class AURA_API UAuraDamageGameplayAbility : public UAuraGameplayAbility
 public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyDamage(AActor* TargetActor);
+
+	UFUNCTION(BlueprintPure)
+	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

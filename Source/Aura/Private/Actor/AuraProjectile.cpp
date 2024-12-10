@@ -9,6 +9,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Aura/Aura.h"
 
 AAuraProjectile::AAuraProjectile()
@@ -50,7 +51,10 @@ void AAuraProjectile::Destroyed()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ImpactEffect, GetActorLocation());
-		ProjectileSoundComponent->Stop();
+		if (ProjectileSoundComponent)
+		{
+			ProjectileSoundComponent->Stop();
+		}
 	}
 
 	Super::Destroyed();
@@ -62,7 +66,16 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 	{
 		return;
 	}
-	if (DamageEffectSpecHandle.Data.IsValid() && DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser() == OtherActor)
+	if (!DamageEffectSpecHandle.Data.IsValid())
+	{
+		return;
+	}
+	AActor* EffectCauser = DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser();
+	if (EffectCauser == OtherActor)
+	{
+		return;
+	}
+	if (!UAuraAbilitySystemLibrary::IsEnemy(EffectCauser, OtherActor))
 	{
 		return;
 	}
