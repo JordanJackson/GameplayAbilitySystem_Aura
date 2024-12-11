@@ -79,11 +79,11 @@ bool AAuraCharacterBase::IsDead_Implementation() const
 	return bIsDead;
 }
 
-FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag)
+FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& SocketTag)
 {
-	if (MontageTag.IsValid() && MontageSocketMap.Contains(MontageTag))
+	if (SocketTag.IsValid() && MontageSocketMap.Contains(SocketTag))
 	{
-		const FCombatSocket CombatSocket = MontageSocketMap[MontageTag];
+		const FCombatSocket CombatSocket = MontageSocketMap[SocketTag];
 		if (CombatSocket.bUseWeaponMesh)
 		{
 			return Weapon->GetSocketLocation(CombatSocket.SocketName);
@@ -93,7 +93,7 @@ FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGamepl
 			return GetMesh()->GetSocketLocation(CombatSocket.SocketName);
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("[%s] does not have a valid socket for GameplayTag [%s]."), *GetNameSafe(this), *MontageTag.GetTagName().ToString());
+	UE_LOG(LogTemp, Warning, TEXT("[%s] does not have a valid socket for GameplayTag [%s]."), *GetNameSafe(this), *SocketTag.GetTagName().ToString());
 	return FVector::ZeroVector;
 }
 
@@ -120,6 +120,24 @@ FTaggedMontage AAuraCharacterBase::GetRandomAttackMontage_Implementation()
 	}
 
 	return AttackMontages[FMath::RandRange(0, AttackMontages.Num()-1)];
+}
+
+UNiagaraSystem* AAuraCharacterBase::GetBloodEffect_Implementation()
+{
+	return BloodEffect;
+}
+
+FTaggedMontage AAuraCharacterBase::GetTaggedMontageByTag_Implementation(const FGameplayTag& MontageTag)
+{
+	for (FTaggedMontage TaggedMontage : AttackMontages)
+	{
+		if (TaggedMontage.MontageTag.MatchesTagExact(MontageTag))
+		{
+			return TaggedMontage;
+		}
+	}
+
+	return FTaggedMontage();
 }
 
 void AAuraCharacterBase::MulticastHandleDeath_Implementation()
