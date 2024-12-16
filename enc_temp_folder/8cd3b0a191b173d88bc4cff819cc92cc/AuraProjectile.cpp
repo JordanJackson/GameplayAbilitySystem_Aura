@@ -55,7 +55,6 @@ void AAuraProjectile::Destroyed()
 		{
 			ProjectileSoundComponent->Stop();
 		}
-		bHasHit = true;
 	}
 
 	Super::Destroyed();
@@ -80,7 +79,6 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 	{
 		return;
 	}
-
 	if (!bHasHit)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
@@ -89,7 +87,6 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 		{
 			ProjectileSoundComponent->Stop();
 		}
-		bHasHit = true;
 	}
 
 	if (HasAuthority())
