@@ -23,9 +23,9 @@ AAuraCharacterBase::AAuraCharacterBase()
 	Weapon->SetupAttachment(GetMesh(), FName("WeaponHandSocket"));
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	MontageSocketMap.Add(FGameplayTag::RequestGameplayTag("Montage.Attack.Weapon"), FCombatSocket(FName("TipSocket"), true));
-	MontageSocketMap.Add(FGameplayTag::RequestGameplayTag("Montage.Attack.LeftHand"), FCombatSocket(FName("LeftHandSocket"), false));
-	MontageSocketMap.Add(FGameplayTag::RequestGameplayTag("Montage.Attack.RightHand"), FCombatSocket(FName("RightHandSocket"), false));
+	MontageSocketMap.Add(FGameplayTag::RequestGameplayTag("CombatSocket.Weapon"), FCombatSocket(FName("TipSocket"), true));
+	MontageSocketMap.Add(FGameplayTag::RequestGameplayTag("CombatSocket.LeftHand"), FCombatSocket(FName("LeftHandSocket"), false));
+	MontageSocketMap.Add(FGameplayTag::RequestGameplayTag("CombatSocket.RightHand"), FCombatSocket(FName("RightHandSocket"), false));
 }
 
 void AAuraCharacterBase::BeginPlay()
